@@ -313,7 +313,9 @@ class userController extends baseController {
     if (!params.email) {
       return (ctx.body = yapi.commons.resReturn(null, 400, '邮箱不能为空'));
     }
-
+    if (!yapi.WEBCONFIG.loginRequired && yapi.WEBCONFIG.guestEmail === params.email) {
+      return (ctx.body = yapi.commons.resReturn(null, 400, '请使用其他邮箱'));
+    }
     if (!params.password) {
       return (ctx.body = yapi.commons.resReturn(null, 400, '密码不能为空'));
     }
@@ -510,6 +512,11 @@ class userController extends baseController {
       let userData = await userInst.findById(id);
       if (!userData) {
         return (ctx.body = yapi.commons.resReturn(null, 400, 'uid不存在'));
+      }
+
+      let guestEmail = yapi.WEBCONFIG.guestEmail
+      if (!yapi.WEBCONFIG.loginRequired && (guestEmail === params.email || guestEmail === userData.email)) {
+        return (ctx.body = yapi.commons.resReturn(null, 400, '无权限..'));
       }
 
       let data = {

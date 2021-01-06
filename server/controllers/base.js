@@ -31,6 +31,9 @@ class baseController {
       '/api/user/avatar',
       '/api/user/login_by_ldap'
     ];
+    if (!yapi.WEBCONFIG.loginRequired) {  // 如果系统不需要登录, 就给设置一个用户
+      await this.setGuessUser(ctx)
+    }
     if (ignoreRouter.indexOf(ctx.path) > -1) {
       this.$auth = true;
     } else {
@@ -83,7 +86,7 @@ class baseController {
       //   }
       //   return (this.$tokenAuth = true);
       // }
-      
+
       let checkId = await this.getProjectIdByToken(token);
       if(!checkId){
         ctx.body = yapi.commons.resReturn(null, 42014, 'token 无效');
@@ -119,13 +122,56 @@ class baseController {
     }
   }
 
+  async setGuessUser(ctx) {
+    if (await this.checkLogin(ctx)) {
+      return
+    }
+    // let token = ctx.cookies.get('_yapi_token');
+    // let uid = ctx.cookies.get('_yapi_uid');
+    // if (!token || !uid) {
+    let guessEmail = yapi.WEBCONFIG.guestEmail;
+    let password = yapi.commons.randStr()
+    let userInst = yapi.getInst(userModel); //创建user实体
+    let user = await userInst.findByEmail(guessEmail);
+    if (null == user) {
+      let passsalt = yapi.commons.randStr();
+      user = await userInst.save({
+        username: guessEmail,
+        password: yapi.commons.generatePassword(password, passsalt), //加密
+        email: guessEmail,
+        passsalt: passsalt,
+        role: 'member',
+        add_time: yapi.commons.time(),
+        up_time: yapi.commons.time(),
+        type: 'site'
+      })
+    }
+    let uid = user._id
+    let token = jwt.sign({ uid: uid }, user.passsalt, { expiresIn: '7 days' });
+    ctx.cookies.set('_yapi_token', token, {
+      expires: yapi.commons.expireDate(7),
+      httpOnly: true
+    });
+    ctx.cookies.set('_yapi_uid', uid, {
+      expires: yapi.commons.expireDate(7),
+      httpOnly: true
+    });
+    this.$uid = uid;
+    this.$auth = true;
+    this.$user = user
+    // }
+  }
+
   getUid() {
     return parseInt(this.$uid, 10);
   }
 
   async checkLogin(ctx) {
-    let token = ctx.cookies.get('_yapi_token');
-    let uid = ctx.cookies.get('_yapi_uid');
+    if (this.$user !== null){
+      return true
+    }
+    let token = ctx.cookies.get('_yapi_token')
+    let uid = ctx.cookies.get('_yapi_uid')
     try {
       if (!token || !uid) {
         return false;
@@ -156,7 +202,7 @@ class baseController {
       return false;
     }
   }
-  
+
   async checkRegister() {
     // console.log('config', yapi.WEBCONFIG);
     if (yapi.WEBCONFIG.closeRegister) {
