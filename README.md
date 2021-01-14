@@ -4,7 +4,7 @@ Forked from https://github.com/YMFE/yapi
 
 ## start
 ```
-cp config_example.json ../config.json
+cd yapi/dev
 npm install 
 npm run start
 ```
