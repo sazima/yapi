@@ -4,7 +4,7 @@ Forked from https://github.com/YMFE/yapi
 
 ## start
 ```
-cd yapi/dev
+cd yapi/yapi
 npm install 
 npm run start
 ```
