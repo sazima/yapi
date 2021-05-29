@@ -5,7 +5,7 @@
   "guestEmail": "guest@guest.com",
   "timeout":120000,
   "db": {
-    "servername": "127.0.0.1",
+    "servername": "mongodb",
     "DATABASE": "yapi",
     "port": 27017,
     "user": "",
