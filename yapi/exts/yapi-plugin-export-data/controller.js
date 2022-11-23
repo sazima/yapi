@@ -20,11 +20,19 @@ class exportController extends baseController {
     
   }
 
-  async handleListClass(pid, status) {
-    let result = await this.catModel.list(pid),
-      newResult = [];
+  async handleListClass(pid, status, catId) {
+    let result = await this.catModel.list(pid)// 获取分类
+    let newResult = [];
     for (let i = 0, item, list; i < result.length; i++) {
       item = result[i].toObject();
+      if (catId !== null ) {
+        if (item._id !== catId) {  // 过滤分类
+          continue
+        }
+      } else {
+        console.log('不过滤分类')
+      }
+
       list = await this.interModel.listByInterStatus(item._id, status);
       list = list.sort((a, b) => {
         return a.index - b.index;
@@ -73,6 +81,13 @@ class exportController extends baseController {
     let type = ctx.request.query.type;
     let status = ctx.request.query.status;
     let isWiki = ctx.request.query.isWiki;
+    let selectCatidForExport = ctx.request.query.selectCatidForExport;
+
+    if (selectCatidForExport === '') {
+      selectCatidForExport = null
+    } else {
+      selectCatidForExport = parseInt(selectCatidForExport)
+    }
 
     if (!pid) {
       ctx.body = yapi.commons.resReturn(null, 200, 'pid 不为空');
@@ -86,7 +101,8 @@ class exportController extends baseController {
         wikiData = await yapi.getInst(wikiModel).get(pid);
       }
       ctx.set('Content-Type', 'application/octet-stream');
-      const list = await this.handleListClass(pid, status);
+      console.log('selectCatidForExport', selectCatidForExport);
+      const list = await this.handleListClass(pid, status, selectCatidForExport);
 
       switch (type) {
         case 'markdown': {

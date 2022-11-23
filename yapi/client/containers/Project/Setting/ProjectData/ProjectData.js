@@ -31,13 +31,13 @@ const RadioGroup = Radio.Group;
 const importDataModule = {};
 const exportDataModule = {};
 const HandleImportData = require('common/HandleImportData');
-function handleExportRouteParams(url, status, isWiki) {
+function handleExportRouteParams(url, status, isWiki, selectCatidForExport) {
   if (!url) {
     return;
   }
   let urlObj = URL.parse(url, true),
     query = {};
-  query = Object.assign(query, urlObj.query, { status, isWiki });
+  query = Object.assign(query, urlObj.query, { status, isWiki, selectCatidForExport });
   return URL.format({
     pathname: urlObj.pathname,
     query
@@ -69,6 +69,7 @@ class ProjectData extends Component {
     super(props);
     this.state = {
       selectCatid: '',
+      selectCatidForExport: '',
       menuList: [],
       curImportType: 'swagger',
       curExportType: null,
@@ -110,6 +111,12 @@ class ProjectData extends Component {
       selectCatid: +value
     });
   }
+  selectChangeForExport(value) {
+    this.setState({
+      selectCatidForExport: +value
+    });
+  }
+
 
   uploadChange = info => {
     const status = info.file.status;
@@ -310,7 +317,8 @@ class ProjectData extends Component {
     let exportHref = handleExportRouteParams(
       exportUrl,
       this.state.exportContent,
-      this.state.isWiki
+      this.state.isWiki,
+      this.state.selectCatidForExport
     );
 
     // console.log('inter', this.state.exportContent);
@@ -463,6 +471,26 @@ class ProjectData extends Component {
               <div>
                 <h3>数据导出</h3>
               </div>
+              <div className="ecatidSelect">
+                <Select
+                    placeholder="请选择数据导出的默认分类"
+                    value={this.state.selectCatidForExport + ''}
+                    style={{ width: '100%' }}
+                    onChange={this.selectChangeForExport.bind(this)}
+                    filterOption={(input, option) =>
+                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                >
+                  {this.state.menuList.map((item, key) => {
+                    return (
+                        <Option key={key} value={item._id + ''}>
+                          {item.name}
+                        </Option>
+                    );
+                  })}
+                </Select>
+              </div>
+
               <div className="dataImportTile">
                 <Select placeholder="请选择导出数据的方式" onChange={this.handleExportType}>
                   {Object.keys(exportDataModule).map(name => {

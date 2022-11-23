@@ -1,28 +1,17 @@
 version: '3'
 
 services:
-  mongodb:
-    image: mvertes/alpine-mongo:4.0.1-0
-    volumes:
-      - mongo_data_yapi:/data/db
-    privileged: true
-    networks:
-      - yapi
 
   yapi:
     build: .
     ports:
       - 3000:3000
+    network_mode: host
+    restart: always
     volumes:
       - ./config.json:/vendors/config.json
-    depends_on:
-      - mongodb
     privileged: true
-    networks:
-      - yapi
 
 volumes:
   mongo_data_yapi:
 
-networks:
-  yapi:

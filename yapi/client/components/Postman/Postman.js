@@ -333,6 +333,7 @@ export default class Run extends Component {
 
     let options = handleParams(this.state, this.handleValue),
       result;
+    console.log(options)
 
 
     await plugin.emitHook('before_request', options, {
@@ -655,7 +656,7 @@ export default class Run extends Component {
             })()}
           >
             <Button
-              disabled={!hasPlugin}
+              disabled={false}
               onClick={this.reqRealInterface}
               type="primary"
               style={{ marginLeft: 10 }}
