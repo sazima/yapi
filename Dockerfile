@@ -9,6 +9,6 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
         g++ \
         make \
         python3 \
-    && npm install --production --registry https://registry.npm.taobao.org \
+    && npm install --production --registry https://registry.npmmirror.com \
     && apk del .fetch-deps
 ENTRYPOINT ["node", "server/app.js"]
