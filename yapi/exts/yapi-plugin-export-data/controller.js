@@ -9,6 +9,7 @@ const markdownItAnchor = require('markdown-it-anchor');
 const markdownItTableOfContents = require('markdown-it-table-of-contents');
 const defaultTheme = require('./defaultTheme.js');
 const md = require('../../common/markdown');
+const {jsonToWord} = require("./exportDocx");
 
 // const htmlToPdf = require("html-pdf");
 class exportController extends baseController {
@@ -116,6 +117,12 @@ class exportController extends baseController {
           ctx.set('Content-Disposition', `attachment; filename=api.json`);
           return (ctx.body = tp);
         }
+        case 'word': {
+          let jsonData = this.handleExistId(list);
+          const buffer = await jsonToWord(jsonData)
+          ctx.set('Content-Disposition', `attachment; filename=api.docx`);
+          return (ctx.body = buffer);
+        }
         default: {
           //默认为html
           tp = await createHtml.bind(this)(list);
@@ -198,6 +205,10 @@ class exportController extends baseController {
         yapi.commons.log(e, 'error');
         ctx.body = yapi.commons.resReturn(null, 502, '下载出错');
       }
+    }
+
+    function createDocx(list) {
+
     }
   }
 }
